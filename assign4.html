@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Reading Mode Experiment</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    line-height: 1.7;
+    transition: background 0.3s, color 0.3s;
+  }
+  .dark { background: #121212; color: #e0e0e0; }
+  .section { display: none; }
+  .visible { display: block; }
+  .timer { font-size: 1.6rem; font-weight: bold; margin: 20px 0; }
+  button {
+    padding: 12px 20px;
+    font-size: 17px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  textarea {
+    width: 100%;
+    height: 90px;
+    padding: 10px;
+    font-size: 16px;
+  }
+  .result-box {
+    padding: 15px;
+    border-radius: 8px;
+    background: #f2f2f2;
+  }
+  .dark .result-box { background: #1f1f1f; }
+</style>
+</head>
+<body>
+
+<!-- START PAGE -->
+<div id="startPage" class="section visible">
+  <h1>Reading Time Study</h1>
+  <p>You will read two passages with comprehension questions in between.</p>
+  <button id="beginBtn">Start</button>
+</div>
+
+<!-- PASSAGE 1 -->
+<div id="passage1" class="section">
+  <h2 id="title1"></h2>
+  <p id="text1"></p>
+  <div id="timer1" class="timer">00:00.00</div>
+  <button id="toQ1">Next</button>
+</div>
+
+<!-- QUESTION 1 -->
+<div id="q1Page" class="section">
+  <h2>Comprehension Question</h2>
+  <p id="question1"></p>
+  <textarea id="answer1"></textarea>
+  <button id="toBreak">Next</button>
+</div>
+
+<!-- BREAK PAGE -->
+<div id="breakPage" class="section">
+  <h2>Break</h2>
+  <p>You may take a short break before continuing to the next passage.</p>
+  <p>Click **Next** when you are ready to begin the second passage.</p>
+  <button id="nextToPassage2">Next</button>
+</div>
+
+<!-- PASSAGE 2 -->
+<div id="passage2" class="section">
+  <h2 id="title2"></h2>
+  <p id="text2"></p>
+  <div id="timer2" class="timer">00:00.00</div>
+  <button id="toQ2">Next</button>
+</div>
+
+<!-- QUESTION 2 -->
+<div id="q2Page" class="section">
+  <h2>Comprehension Question</h2>
+  <p id="question2"></p>
+  <textarea id="answer2"></textarea>
+  <button id="finishBtn">Finish</button>
+</div>
+
+<!-- RESULTS -->
+<div id="results" class="section">
+  <h2>Results</h2>
+  <div class="result-box">
+    <p><strong id="label1"></strong>: <span id="final1"></span></p>
+    <p><strong>Answer:</strong> <span id="finalAnswer1"></span></p>
+    <br>
+    <p><strong id="label2"></strong>: <span id="final2"></span></p>
+    <p><strong>Answer:</strong> <span id="finalAnswer2"></span></p>
+  </div>
+</div>
+
+<script>
+/* -----------------------------
+       REAL PASSAGES + QUESTIONS
+------------------------------ */
+
+const REAL_PASSAGE_1 = 
+`Digital reading habits have changed significantly as more people rely on phones, tablets, and laptops for everyday information. Because digital displays vary in brightness, contrast, and size, users often make adjustments to create a more comfortable reading experience. Changing the color mode is one of the simplest ways to adapt a screen to different environments. Light mode can resemble the appearance of printed materials, making it feel familiar and reliable for many readers. Dark mode, meanwhile, reduces overall screen brightness and can minimize visual strain during nighttime use.
+
+Despite these benefits, there is no universal agreement on which mode is better for performance. Some users feel they read faster in light mode, while others report greater focus in dark mode. Context plays a major role, and users may switch modes depending on the time of day or the lighting around them. By understanding how people use these options, designers can develop interfaces that adapt more effectively to individual preferences.`;
+
+const REAL_Q1 = `Why do some people prefer dark mode when reading at night?`;
+
+const REAL_PASSAGE_2 =
+`As digital content becomes more diverse, readers interact with many forms of text, including articles, messages, reports, and long documents. Interface settings such as color mode influence not only how the text looks but also how comfortable it feels to read for extended periods. Light mode often provides strong contrast between text and background, which some people find helpful for maintaining clarity. However, bright backgrounds can be tiring when used in dim settings or for long stretches of time. This leads many users to consider dark mode for certain situations.
+
+Dark mode reduces brightness and may help lessen glare, especially on modern screens with high luminance levels. Still, not everyone finds dark mode ideal, because lighter text on dark backgrounds can appear less sharp for some readers. Personal preference and environmental lighting are major factors that influence comfort. As technology continues to evolve, researchers are paying closer attention to how color mode choices affect reading speed, accuracy, and overall usability.`;
+
+const REAL_Q2 =
+`According to the passage, what is one drawback of using light mode for long periods?`;
+
+/* -----------------------------
+       RANDOMIZATION
+------------------------------ */
+
+let firstPassage, firstQ, firstLabel;
+let secondPassage, secondQ, secondLabel;
+
+let firstMode, secondMode;
+
+function randomize() {
+  const order = Math.random() < 0.5 ? 1 : 2;
+
+  if (order === 1) {
+    firstPassage = REAL_PASSAGE_1;
+    firstQ = REAL_Q1;
+    firstLabel = "Passage 1 (original first passage)";
+    secondPassage = REAL_PASSAGE_2;
+    secondQ = REAL_Q2;
+    secondLabel = "Passage 2 (original second passage)";
+  } else {
+    firstPassage = REAL_PASSAGE_2;
+    firstQ = REAL_Q2;
+    firstLabel = "Passage 2 (original second passage)";
+    secondPassage = REAL_PASSAGE_1;
+    secondQ = REAL_Q1;
+    secondLabel = "Passage 1 (original first passage)";
+  }
+
+  // Randomize light/dark
+  const lightFirst = Math.random() < 0.5;
+  firstMode = lightFirst ? "light" : "dark";
+  secondMode = lightFirst ? "dark" : "light";
+}
+
+/* -----------------------------
+        TIMERS
+------------------------------ */
+
+function formatTime(ms) {
+  let s = ms / 1000;
+  return (
+    String(Math.floor(s / 60)).padStart(2,"0") + ":" +
+    String(Math.floor(s % 60)).padStart(2,"0") + "." +
+    String(Math.floor((s % 1) * 100)).padStart(2,"0")
+  );
+}
+
+let start1, start2;
+let interval1, interval2;
+
+/* -----------------------------
+        BEGIN
+------------------------------ */
+
+document.getElementById("beginBtn").addEventListener("click", () => {
+  randomize();
+
+  // Insert randomized content
+  document.getElementById("text1").textContent = firstPassage;
+  document.getElementById("question1").textContent = firstQ;
+  document.getElementById("text2").textContent = secondPassage;
+  document.getElementById("question2").textContent = secondQ;
+
+  document.getElementById("title1").textContent =
+    `${firstLabel} — ${firstMode.toUpperCase()} MODE`;
+  document.getElementById("title2").textContent =
+    `${secondLabel} — ${secondMode.toUpperCase()} MODE`;
+
+  document.getElementById("label1").textContent =
+    `${firstLabel} (${firstMode} mode)`;
+  document.getElementById("label2").textContent =
+    `${secondLabel} (${secondMode} mode)`;
+
+  // Show first passage
+  document.getElementById("startPage").classList.remove("visible");
+  document.getElementById("passage1").classList.add("visible");
+
+  document.body.classList.toggle("dark", firstMode === "dark");
+
+  start1 = Date.now();
+  interval1 = setInterval(() =>
+    document.getElementById("timer1").textContent =
+      formatTime(Date.now() - start1), 10);
+});
+
+/* -----------------------------
+ PASSAGE 1 → QUESTION 1
+------------------------------ */
+
+document.getElementById("toQ1").addEventListener("click", () => {
+  clearInterval(interval1);
+  document.getElementById("final1").textContent =
+    document.getElementById("timer1").textContent;
+
+  document.getElementById("passage1").classList.remove("visible");
+  document.getElementById("q1Page").classList.add("visible");
+});
+
+/* -----------------------------
+ QUESTION 1 → BREAK PAGE
+------------------------------ */
+
+document.getElementById("toBreak").addEventListener("click", () => {
+  document.getElementById("finalAnswer1").textContent =
+    document.getElementById("answer1").value;
+
+  document.getElementById("q1Page").classList.remove("visible");
+  document.getElementById("breakPage").classList.add("visible");
+});
+
+/* -----------------------------
+ BREAK PAGE → PASSAGE 2
+------------------------------ */
+
+document.getElementById("nextToPassage2").addEventListener("click", () => {
+  document.getElementById("breakPage").classList.remove("visible");
+  document.getElementById("passage2").classList.add("visible");
+
+  document.body.classList.toggle("dark", secondMode === "dark");
+
+  start2 = Date.now();
+  interval2 = setInterval(() =>
+    document.getElementById("timer2").textContent =
+      formatTime(Date.now() - start2), 10);
+});
+
+/* -----------------------------
+ PASSAGE 2 → QUESTION 2
+------------------------------ */
+
+document.getElementById("toQ2").addEventListener("click", () => {
+  clearInterval(interval2);
+  document.getElementById("final2").textContent =
+    document.getElementById("timer2").textContent;
+
+  document.getElementById("passage2").classList.remove("visible");
+  document.getElementById("q2Page").classList.add("visible");
+});
+
+/* -----------------------------
+ QUESTION 2 → RESULTS
+------------------------------ */
+
+document.getElementById("finishBtn").addEventListener("click", () => {
+  document.getElementById("finalAnswer2").textContent =
+    document.getElementById("answer2").value;
+
+  document.getElementById("q2Page").classList.remove("visible");
+  document.getElementById("results").classList.add("visible");
+});
+</script>
+</body>
+</html>
+
+
+
+
+
+
