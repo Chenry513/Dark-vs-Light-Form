@@ -41,7 +41,7 @@
 <!-- START PAGE -->
 <div id="startPage" class="section visible">
   <h1>Reading Time Study</h1>
-  <p>You will read two passages in random order and random color mode.</p>
+  <p>You will read two passages. Dark/Light mode will be randomized.</p>
   <button id="beginBtn">Start</button>
 </div>
 
@@ -61,10 +61,10 @@
   <button id="toBreak">Next</button>
 </div>
 
-<!-- BREAK PAGE -->
+<!-- BREAK -->
 <div id="breakPage" class="section">
   <h2>Break</h2>
-  <p>Click next when you are ready to start the next passage.</p>
+  <p>Click next when you are ready to continue.</p>
   <button id="nextToPassage2">Next</button>
 </div>
 
@@ -99,11 +99,11 @@
   <p id="submitStatus" style="font-weight:bold;"></p>
 </div>
 
-
 <script>
 /* -----------------------------
-       PASSAGES + QUESTIONS
+       PASSAGES (FULL TEXT)
 ------------------------------ */
+
 const PASSAGE_1 = 
 `Digital reading habits have changed significantly as more people rely on phones, tablets, and laptops for everyday information. Because digital displays vary in brightness, contrast, and size, users often make adjustments to create a more comfortable reading experience. Changing the color mode is one of the simplest ways to adapt a screen to different environments. Light mode can resemble the appearance of printed materials, making it feel familiar and reliable for many readers. Dark mode, meanwhile, reduces overall screen brightness and can minimize visual strain during nighttime use.
 
@@ -118,43 +118,21 @@ Dark mode reduces brightness and may help lessen glare, especially on modern scr
 
 const Q2 = `According to the passage, what is one drawback of using light mode for long periods?`;
 
+
 /* -----------------------------
-       RANDOMIZATION
+       RANDOMIZE MODE ONLY
 ------------------------------ */
 
-let firstPassage, secondPassage;
-let firstQ, secondQ;
-let firstLine, secondLine;
-let firstMode, secondMode;
+let mode1, mode2;
 
-function randomize() {
-  const order = Math.random() < 0.5 ? 1 : 2;
-
-  if (order === 1) {
-    firstPassage = PASSAGE_1;
-    firstQ = Q1;
-    firstLine = PASSAGE_1.split("\n")[0];
-
-    secondPassage = PASSAGE_2;
-    secondQ = Q2;
-    secondLine = PASSAGE_2.split("\n")[0];
-  } else {
-    firstPassage = PASSAGE_2;
-    firstQ = Q2;
-    firstLine = PASSAGE_2.split("\n")[0];
-
-    secondPassage = PASSAGE_1;
-    secondQ = Q1;
-    secondLine = PASSAGE_1.split("\n")[0];
-  }
-
-  const lightFirst = Math.random() < 0.5;
-  firstMode = lightFirst ? "light" : "dark";
-  secondMode = lightFirst ? "dark" : "light";
+function randomizeModes() {
+  const firstLight = Math.random() < 0.5;
+  mode1 = firstLight ? "light" : "dark";
+  mode2 = firstLight ? "dark" : "light";
 }
 
 /* -----------------------------
-       TIMER UTIL
+       TIMERS
 ------------------------------ */
 
 function formatTime(ms) {
@@ -166,38 +144,32 @@ function formatTime(ms) {
   );
 }
 
-let start1, start2;
-let interval1, interval2;
+let start1, start2, interval1, interval2;
 
 /* -----------------------------
-       BEGIN STUDY
+       BEGIN EXPERIMENT
 ------------------------------ */
 
 document.getElementById("beginBtn").addEventListener("click", () => {
-  randomize();
 
-  document.getElementById("text1").textContent = firstPassage;
-  document.getElementById("question1").textContent = firstQ;
+  randomizeModes();
 
-  document.getElementById("text2").textContent = secondPassage;
-  document.getElementById("question2").textContent = secondQ;
+  document.getElementById("text1").textContent = PASSAGE_1;
+  document.getElementById("question1").textContent = Q1;
 
-  document.getElementById("title1").textContent =
-    `${firstLine} — ${firstMode.toUpperCase()} MODE`;
+  document.getElementById("text2").textContent = PASSAGE_2;
+  document.getElementById("question2").textContent = Q2;
 
-  document.getElementById("title2").textContent =
-    `${secondLine} — ${secondMode.toUpperCase()} MODE`;
+  document.getElementById("title1").textContent = `Passage 1 — ${mode1.toUpperCase()} MODE`;
+  document.getElementById("label1").textContent = `Passage 1 (${mode1} mode)`;
 
-  document.getElementById("label1").textContent =
-    `${firstLine} (${firstMode} mode)`;
-
-  document.getElementById("label2").textContent =
-    `${secondLine} (${secondMode} mode)`;
+  document.getElementById("title2").textContent = `Passage 2 — ${mode2.toUpperCase()} MODE`;
+  document.getElementById("label2").textContent = `Passage 2 (${mode2} mode)`;
 
   document.getElementById("startPage").classList.remove("visible");
   document.getElementById("passage1").classList.add("visible");
 
-  document.body.classList.toggle("dark", firstMode === "dark");
+  document.body.classList.toggle("dark", mode1 === "dark");
 
   start1 = Date.now();
   interval1 = setInterval(() =>
@@ -219,7 +191,7 @@ document.getElementById("toQ1").addEventListener("click", () => {
 });
 
 /* -----------------------------
- QUESTION 1 → BREAK PAGE
+ QUESTION 1 → BREAK
 ------------------------------ */
 
 document.getElementById("toBreak").addEventListener("click", () => {
@@ -238,7 +210,7 @@ document.getElementById("nextToPassage2").addEventListener("click", () => {
   document.getElementById("breakPage").classList.remove("visible");
   document.getElementById("passage2").classList.add("visible");
 
-  document.body.classList.toggle("dark", secondMode === "dark");
+  document.body.classList.toggle("dark", mode2 === "dark");
 
   start2 = Date.now();
   interval2 = setInterval(() =>
@@ -272,24 +244,23 @@ document.getElementById("finishBtn").addEventListener("click", () => {
 });
 
 /* -----------------------------
-      GOOGLE SHEETS SUBMISSION
+       SEND TO GOOGLE SHEETS
 ------------------------------ */
 
 document.getElementById("submitResults").addEventListener("click", () => {
 
   const data = {
-    first_passage_first_line: firstLine,
-    first_mode: firstMode,
-    first_time: document.getElementById("final1").textContent,
-    first_answer: document.getElementById("finalAnswer1").textContent,
+    passage1_identifier: "Passage 1",
+    passage1_mode: mode1,
+    passage1_time: document.getElementById("final1").textContent,
+    passage1_answer: document.getElementById("finalAnswer1").textContent,
 
-    second_passage_first_line: secondLine,
-    second_mode: secondMode,
-    second_time: document.getElementById("final2").textContent,
-    second_answer: document.getElementById("finalAnswer2").textContent
+    passage2_identifier: "Passage 2",
+    passage2_mode: mode2,
+    passage2_time: document.getElementById("final2").textContent,
+    passage2_answer: document.getElementById("finalAnswer2").textContent
   };
 
-  // *** THIS ONLY SENDS TO GOOGLE SHEETS — NO DOWNLOAD ***
   fetch("https://script.google.com/macros/s/AKfycby-9VjwPSyxya2vc0UuIx1HbM1LnEaM98bEGCVwHF3tWALSG6czbGBkAYt5jv8wSO-PcA/exec", {
     method: "POST",
     mode: "no-cors",
@@ -304,6 +275,7 @@ document.getElementById("submitResults").addEventListener("click", () => {
 
 </body>
 </html>
+
 
 
 
