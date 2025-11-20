@@ -61,7 +61,7 @@
   <button id="toBreak">Next</button>
 </div>
 
-<!-- BREAK -->
+<!-- BREAK PAGE -->
 <div id="breakPage" class="section">
   <h2>Break</h2>
   <p>Click next when you are ready to continue.</p>
@@ -118,7 +118,6 @@ Dark mode reduces brightness and may help lessen glare, especially on modern scr
 
 const Q2 = `According to the passage, what is one drawback of using light mode for long periods?`;
 
-
 /* -----------------------------
        RANDOMIZE MODE ONLY
 ------------------------------ */
@@ -132,7 +131,7 @@ function randomizeModes() {
 }
 
 /* -----------------------------
-       TIMERS
+       TIMER FUNCTION
 ------------------------------ */
 
 function formatTime(ms) {
@@ -151,26 +150,30 @@ let start1, start2, interval1, interval2;
 ------------------------------ */
 
 document.getElementById("beginBtn").addEventListener("click", () => {
-
   randomizeModes();
 
+  // Set passage text
   document.getElementById("text1").textContent = PASSAGE_1;
   document.getElementById("question1").textContent = Q1;
 
   document.getElementById("text2").textContent = PASSAGE_2;
   document.getElementById("question2").textContent = Q2;
 
+  // Titles
   document.getElementById("title1").textContent = `Passage 1 — ${mode1.toUpperCase()} MODE`;
   document.getElementById("label1").textContent = `Passage 1 (${mode1} mode)`;
 
   document.getElementById("title2").textContent = `Passage 2 — ${mode2.toUpperCase()} MODE`;
   document.getElementById("label2").textContent = `Passage 2 (${mode2} mode)`;
 
+  // Switch page
   document.getElementById("startPage").classList.remove("visible");
   document.getElementById("passage1").classList.add("visible");
 
+  // Apply mode
   document.body.classList.toggle("dark", mode1 === "dark");
 
+  // Start timer
   start1 = Date.now();
   interval1 = setInterval(() =>
     document.getElementById("timer1").textContent =
@@ -275,6 +278,7 @@ document.getElementById("submitResults").addEventListener("click", () => {
 
 </body>
 </html>
+
 
 
 
