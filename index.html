@@ -94,7 +94,7 @@
     <p><strong id="label2"></strong>: <span id="final2"></span></p>
     <p><strong>Answer:</strong> <span id="finalAnswer2"></span></p>
   </div>
-  <button id="downloadCSV">Download Results</button>
+  <button id="submitResults">Submit Results</button>
 </div>
 
 <script>
@@ -121,6 +121,7 @@ const REAL_Q2 = `According to the passage, what is one drawback of using light m
 ------------------------------ */
 
 let firstPassage, secondPassage;
+let firstPassageLine, secondPassageLine;
 let firstQ, secondQ;
 let firstLabel, secondLabel;
 
@@ -131,18 +132,24 @@ function randomize() {
 
   if (order === 1) {
     firstPassage = REAL_PASSAGE_1;
+    firstPassageLine = REAL_PASSAGE_1.split("\n")[0];
     firstQ = REAL_Q1;
-    firstLabel = "Passage 1 (original first passage)";
+    firstLabel = REAL_PASSAGE_1.split(" ")[0] + "…";
+
     secondPassage = REAL_PASSAGE_2;
+    secondPassageLine = REAL_PASSAGE_2.split("\n")[0];
     secondQ = REAL_Q2;
-    secondLabel = "Passage 2 (original second passage)";
+    secondLabel = REAL_PASSAGE_2.split(" ")[0] + "…";
   } else {
     firstPassage = REAL_PASSAGE_2;
+    firstPassageLine = REAL_PASSAGE_2.split("\n")[0];
     firstQ = REAL_Q2;
-    firstLabel = "Passage 2 (original second passage)";
+    firstLabel = REAL_PASSAGE_2.split(" ")[0] + "…";
+
     secondPassage = REAL_PASSAGE_1;
+    secondPassageLine = REAL_PASSAGE_1.split("\n")[0];
     secondQ = REAL_Q1;
-    secondLabel = "Passage 1 (original first passage)";
+    secondLabel = REAL_PASSAGE_1.split(" ")[0] + "…";
   }
 
   const lightFirst = Math.random() < 0.5;
@@ -180,14 +187,14 @@ document.getElementById("beginBtn").addEventListener("click", () => {
   document.getElementById("question2").textContent = secondQ;
 
   document.getElementById("title1").textContent =
-    `${firstLabel} — ${firstMode.toUpperCase()} MODE`;
+    `${firstPassageLine} — ${firstMode.toUpperCase()} MODE`;
   document.getElementById("title2").textContent =
-    `${secondLabel} — ${secondMode.toUpperCase()} MODE`;
+    `${secondPassageLine} — ${secondMode.toUpperCase()} MODE`;
 
   document.getElementById("label1").textContent =
-    `${firstLabel} (${firstMode} mode)`;
+    `${firstPassageLine} (${firstMode} mode)`;
   document.getElementById("label2").textContent =
-    `${secondLabel} (${secondMode} mode)`;
+    `${secondPassageLine} (${secondMode} mode)`;
 
   document.getElementById("startPage").classList.remove("visible");
   document.getElementById("passage1").classList.add("visible");
@@ -267,36 +274,31 @@ document.getElementById("finishBtn").addEventListener("click", () => {
 });
 
 /* -----------------------------
-      CSV EXPORT FEATURE
+      GOOGLE SHEETS SUBMISSION
 ------------------------------ */
 
-document.getElementById("downloadCSV").addEventListener("click", () => {
-  
-  const csvData = [
-    ["field","value"],
-    ["first_passage_label", firstLabel],
-    ["first_mode", firstMode],
-    ["first_time", document.getElementById("final1").textContent],
-    ["first_answer", document.getElementById("finalAnswer1").textContent],
-    ["second_passage_label", secondLabel],
-    ["second_mode", secondMode],
-    ["second_time", document.getElementById("final2").textContent],
-    ["second_answer", document.getElementById("finalAnswer2").textContent]
-  ];
+document.getElementById("submitResults").addEventListener("click", () => {
 
-  let csvContent = csvData
-    .map(row => row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(","))
-    .join("\n");
+  const results = {
+    first_passage_first_line: firstPassageLine,
+    first_mode: firstMode,
+    first_time: document.getElementById("final1").textContent,
+    first_answer: document.getElementById("finalAnswer1").textContent,
 
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
+    second_passage_first_line: secondPassageLine,
+    second_mode: secondMode,
+    second_time: document.getElementById("final2").textContent,
+    second_answer: document.getElementById("finalAnswer2").textContent
+  };
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "reading_study_results.csv";
-  a.click();
+  fetch("https://script.google.com/macros/s/AKfycby-9VjwPSyxya2vc0UuIx1HbM1LnEaM98bEGCVwHF3tWALSG6czbGBkAYt5jv8wSO-PcA/exec", {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(results)
+  });
 
-  URL.revokeObjectURL(url);
+  alert("Your responses have been submitted. Thank you!");
 });
 </script>
 
