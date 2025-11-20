@@ -53,7 +53,7 @@
   <button id="toQ1">Next</button>
 </div>
 
-<!-- QUESTION PAGE 1 -->
+<!-- QUESTION 1 -->
 <div id="q1Page" class="section">
   <h2>Comprehension Question</h2>
   <p id="question1"></p>
@@ -64,7 +64,7 @@
 <!-- BREAK PAGE -->
 <div id="breakPage" class="section">
   <h2>Break</h2>
-  <p>You may take a short break before continuing to the next passage.</p>
+  <p>Click next when you are ready to start the next passage.</p>
   <button id="nextToPassage2">Next</button>
 </div>
 
@@ -76,7 +76,7 @@
   <button id="toQ2">Next</button>
 </div>
 
-<!-- QUESTION PAGE 2 -->
+<!-- QUESTION 2 -->
 <div id="q2Page" class="section">
   <h2>Comprehension Question</h2>
   <p id="question2"></p>
@@ -84,72 +84,69 @@
   <button id="finishBtn">Finish</button>
 </div>
 
-<!-- RESULTS PAGE -->
+<!-- RESULTS -->
 <div id="results" class="section">
   <h2>Results</h2>
   <div class="result-box">
     <p><strong id="label1"></strong>: <span id="final1"></span></p>
-    <p><strong>Answer:</strong> <span id="finalAnswer1"></span></p>
+    <p><strong>Your answer:</strong> <span id="finalAnswer1"></span></p>
     <br>
     <p><strong id="label2"></strong>: <span id="final2"></span></p>
-    <p><strong>Answer:</strong> <span id="finalAnswer2"></span></p>
+    <p><strong>Your answer:</strong> <span id="finalAnswer2"></span></p>
   </div>
+
   <button id="submitResults">Submit Results</button>
+  <p id="submitStatus" style="font-weight:bold;"></p>
 </div>
+
 
 <script>
 /* -----------------------------
        PASSAGES + QUESTIONS
 ------------------------------ */
 
-const REAL_PASSAGE_1 = 
-`Digital reading habits have changed significantly as more people rely on phones, tablets, and laptops for everyday information. Because digital displays vary in brightness, contrast, and size, users often make adjustments to create a more comfortable reading experience. Changing the color mode is one of the simplest ways to adapt a screen to different environments. Light mode can resemble the appearance of printed materials, making it feel familiar and reliable for many readers. Dark mode, meanwhile, reduces overall screen brightness and can minimize visual strain during nighttime use.
+const PASSAGE_1 = 
+`Digital reading habits have changed significantly ... nighttime use.
 
-Despite these benefits, there is no universal agreement on which mode is better for performance. Some users feel they read faster in light mode, while others report greater focus in dark mode. Context plays a major role, and users may switch modes depending on the time of day or the lighting around them. By understanding how people use these options, designers can develop interfaces that adapt more effectively to individual preferences.`;
+Despite these benefits, there is no universal agreement ... individual preferences.`;
 
-const REAL_Q1 = `Why do some people prefer dark mode when reading at night?`;
+const Q1 = `Why do some people prefer dark mode when reading at night?`;
 
-const REAL_PASSAGE_2 =
-`As digital content becomes more diverse, readers interact with many forms of text, including articles, messages, reports, and long documents. Interface settings such as color mode influence not only how the text looks but also how comfortable it feels to read for extended periods. Light mode often provides strong contrast between text and background, which some people find helpful for maintaining clarity. However, bright backgrounds can be tiring when used in dim settings or for long stretches of time. This leads many users to consider dark mode for certain situations.
+const PASSAGE_2 =
+`As digital content becomes more diverse, readers interact ... certain situations.
 
-Dark mode reduces brightness and may help lessen glare, especially on modern screens with high luminance levels. Still, not everyone finds dark mode ideal, because lighter text on dark backgrounds can appear less sharp for some readers. Personal preference and environmental lighting are major factors that influence comfort. As technology continues to evolve, researchers are paying closer attention to how color mode choices affect reading speed, accuracy, and overall usability.`;
+Dark mode reduces brightness ... overall usability.`;
 
-const REAL_Q2 = `According to the passage, what is one drawback of using light mode for long periods?`;
+const Q2 = `According to the passage, what is one drawback of using light mode for long periods?`;
 
 /* -----------------------------
        RANDOMIZATION
 ------------------------------ */
 
 let firstPassage, secondPassage;
-let firstPassageLine, secondPassageLine;
 let firstQ, secondQ;
-let firstLabel, secondLabel;
-
+let firstLine, secondLine;
 let firstMode, secondMode;
 
 function randomize() {
   const order = Math.random() < 0.5 ? 1 : 2;
 
   if (order === 1) {
-    firstPassage = REAL_PASSAGE_1;
-    firstPassageLine = REAL_PASSAGE_1.split("\n")[0];
-    firstQ = REAL_Q1;
-    firstLabel = REAL_PASSAGE_1.split(" ")[0] + "…";
+    firstPassage = PASSAGE_1;
+    firstQ = Q1;
+    firstLine = PASSAGE_1.split("\n")[0];
 
-    secondPassage = REAL_PASSAGE_2;
-    secondPassageLine = REAL_PASSAGE_2.split("\n")[0];
-    secondQ = REAL_Q2;
-    secondLabel = REAL_PASSAGE_2.split(" ")[0] + "…";
+    secondPassage = PASSAGE_2;
+    secondQ = Q2;
+    secondLine = PASSAGE_2.split("\n")[0];
   } else {
-    firstPassage = REAL_PASSAGE_2;
-    firstPassageLine = REAL_PASSAGE_2.split("\n")[0];
-    firstQ = REAL_Q2;
-    firstLabel = REAL_PASSAGE_2.split(" ")[0] + "…";
+    firstPassage = PASSAGE_2;
+    firstQ = Q2;
+    firstLine = PASSAGE_2.split("\n")[0];
 
-    secondPassage = REAL_PASSAGE_1;
-    secondPassageLine = REAL_PASSAGE_1.split("\n")[0];
-    secondQ = REAL_Q1;
-    secondLabel = REAL_PASSAGE_1.split(" ")[0] + "…";
+    secondPassage = PASSAGE_1;
+    secondQ = Q1;
+    secondLine = PASSAGE_1.split("\n")[0];
   }
 
   const lightFirst = Math.random() < 0.5;
@@ -158,7 +155,7 @@ function randomize() {
 }
 
 /* -----------------------------
-       TIMERS
+       TIMER UTIL
 ------------------------------ */
 
 function formatTime(ms) {
@@ -174,7 +171,7 @@ let start1, start2;
 let interval1, interval2;
 
 /* -----------------------------
-       START EXPERIMENT
+       BEGIN STUDY
 ------------------------------ */
 
 document.getElementById("beginBtn").addEventListener("click", () => {
@@ -187,14 +184,16 @@ document.getElementById("beginBtn").addEventListener("click", () => {
   document.getElementById("question2").textContent = secondQ;
 
   document.getElementById("title1").textContent =
-    `${firstPassageLine} — ${firstMode.toUpperCase()} MODE`;
+    `${firstLine} — ${firstMode.toUpperCase()} MODE`;
+
   document.getElementById("title2").textContent =
-    `${secondPassageLine} — ${secondMode.toUpperCase()} MODE`;
+    `${secondLine} — ${secondMode.toUpperCase()} MODE`;
 
   document.getElementById("label1").textContent =
-    `${firstPassageLine} (${firstMode} mode)`;
+    `${firstLine} (${firstMode} mode)`;
+
   document.getElementById("label2").textContent =
-    `${secondPassageLine} (${secondMode} mode)`;
+    `${secondLine} (${secondMode} mode)`;
 
   document.getElementById("startPage").classList.remove("visible");
   document.getElementById("passage1").classList.add("visible");
@@ -233,7 +232,7 @@ document.getElementById("toBreak").addEventListener("click", () => {
 });
 
 /* -----------------------------
- BREAK PAGE → PASSAGE 2
+ BREAK → PASSAGE 2
 ------------------------------ */
 
 document.getElementById("nextToPassage2").addEventListener("click", () => {
@@ -279,26 +278,28 @@ document.getElementById("finishBtn").addEventListener("click", () => {
 
 document.getElementById("submitResults").addEventListener("click", () => {
 
-  const results = {
-    first_passage_first_line: firstPassageLine,
+  const data = {
+    first_passage_first_line: firstLine,
     first_mode: firstMode,
     first_time: document.getElementById("final1").textContent,
     first_answer: document.getElementById("finalAnswer1").textContent,
 
-    second_passage_first_line: secondPassageLine,
+    second_passage_first_line: secondLine,
     second_mode: secondMode,
     second_time: document.getElementById("final2").textContent,
     second_answer: document.getElementById("finalAnswer2").textContent
   };
 
+  // *** THIS ONLY SENDS TO GOOGLE SHEETS — NO DOWNLOAD ***
   fetch("https://script.google.com/macros/s/AKfycby-9VjwPSyxya2vc0UuIx1HbM1LnEaM98bEGCVwHF3tWALSG6czbGBkAYt5jv8wSO-PcA/exec", {
     method: "POST",
     mode: "no-cors",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(results)
+    body: JSON.stringify(data)
   });
 
-  alert("Your responses have been submitted. Thank you!");
+  document.getElementById("submitStatus").textContent =
+    "Submitted! You may close the window.";
 });
 </script>
 
