@@ -18,39 +18,17 @@
   }
   .section { display: none; }
   .visible { display: block; }
-
-  .timer {
-    font-size: 1.6rem;
-    font-weight: bold;
-    margin: 15px 0;
-  }
-  button {
-    padding: 12px 20px;
-    font-size: 17px;
-    cursor: pointer;
-    margin-top: 20px;
-  }
-  .result-box {
-    padding: 15px;
-    border-radius: 8px;
-    background: #f2f2f2;
-  }
-  .dark .result-box {
-    background: #1f1f1f;
-  }
-  pre {
-    white-space: pre-wrap;
-    font-family: inherit;
-    font-size: 18px;
-  }
+  .timer { font-size: 1.6rem; font-weight: bold; margin: 15px 0; }
+  button { padding: 12px 20px; font-size: 17px; cursor: pointer; margin-top: 20px; }
+  textarea { width: 100%; height: 120px; }
+  pre { white-space: pre-wrap; font-family: inherit; font-size: 18px; }
 </style>
 </head>
 
 <body>
 
 <div id="startPage" class="section visible">
-  <h1>Reading Time Study</h1>
-  <p>You will read two passages. One will be light mode and one will be dark mode.</p>
+  <h1>Reading Study</h1>
   <button id="beginBtn">Start</button>
 </div>
 
@@ -64,7 +42,7 @@
 <div id="comp1Page" class="section">
   <h2>Comprehension Question 1</h2>
   <p id="comp1"></p>
-  <textarea id="answer1" style="width:100%;height:120px;"></textarea>
+  <textarea id="answer1"></textarea>
   <button id="comp1Next">Next</button>
 </div>
 
@@ -83,13 +61,12 @@
 <div id="comp2Page" class="section">
   <h2>Comprehension Question 2</h2>
   <p id="comp2"></p>
-  <textarea id="answer2" style="width:100%;height:120px;"></textarea>
+  <textarea id="answer2"></textarea>
   <button id="finishBtn">Submit</button>
 </div>
 
 <div id="results" class="section">
-  <h2>Results Submitted</h2>
-  <p>Your results have been recorded.</p>
+  <h2>Submitted</h2>
 </div>
 
 <script>
@@ -98,13 +75,12 @@ const PASSAGE_1 =
 
 Despite these benefits, there is no universal agreement on which mode is better for performance. Some users feel they read faster in light mode, while others report greater focus in dark mode. Context plays a major role, and users may switch modes depending on the time of day or the lighting around them. By understanding how people use these options, designers can develop interfaces that adapt more effectively to individual preferences.`;
 
-const Q1 = `Why do some people prefer dark mode when reading at night?`;
-
 const PASSAGE_2 =
 `As digital content becomes more diverse, readers interact with many forms of text, including articles, messages, reports, and long documents. Interface settings such as color mode influence not only how the text looks but also how comfortable it feels to read for extended periods. Light mode often provides strong contrast between text and background, which some people find helpful for maintaining clarity. However, bright backgrounds can be tiring when used in dim settings or for long stretches of time. This leads many users to consider dark mode for certain situations.
 
 Dark mode reduces brightness and may help lessen glare, especially on modern screens with high luminance levels. Still, not everyone finds dark mode ideal, because lighter text on dark backgrounds can appear less sharp for some readers. Personal preference and environmental lighting are major factors that influence comfort. As technology continues to evolve, researchers are paying closer attention to how color mode choices affect reading speed, accuracy, and overall usability.`;
 
+const Q1 = `Why do some people prefer dark mode when reading at night?`;
 const Q2 = `According to the passage, what is one drawback of using light mode for long periods?`;
 
 document.getElementById("text1").textContent = PASSAGE_1;
@@ -115,6 +91,14 @@ document.getElementById("comp2").textContent = Q2;
 let start1, start2, interval1, interval2;
 let mode1 = Math.random() < 0.5 ? "light" : "dark";
 let mode2 = mode1 === "light" ? "dark" : "light";
+
+function formatTime(ms) {
+  let s = ms / 1000;
+  let m = Math.floor(s / 60);
+  let sec = Math.floor(s % 60);
+  let cs = Math.floor((s - Math.floor(s)) * 100);
+  return String(m).padStart(2,"0") + ":" + String(sec).padStart(2,"0") + "." + String(cs).padStart(2,"0");
+}
 
 document.getElementById("beginBtn").onclick = () => {
   document.getElementById("startPage").classList.remove("visible");
@@ -162,39 +146,33 @@ document.getElementById("next2").onclick = () => {
 };
 
 document.getElementById("finishBtn").onclick = async () => {
+
   let payload = {
-    first_passage_name: "Passage 1",
+    first_passage_first_line: "Passage 1",
     first_mode: mode1,
     first_time: document.getElementById("timer1").textContent,
     first_answer: document.getElementById("answer1").value.trim(),
-
-    second_passage_name: "Passage 2",
+    
+    second_passage_first_line: "Passage 2",
     second_mode: mode2,
     second_time: document.getElementById("timer2").textContent,
     second_answer: document.getElementById("answer2").value.trim()
   };
 
-  await fetch("YOUR_WEBAPP_URL_HERE", {
+  await fetch("https://script.google.com/macros/s/AKfycby-9VjwPSyxya2vc0UuIx1HbM1LnEaM98bEGCVwHF3tWALSG6czbGBkAYt5jv8wSO-PcA/exec", {
     method: "POST",
     body: JSON.stringify(payload),
-    headers: { "Content-Type": "application/json" }
+    headers: { "Content-Type": "text/plain;charset=utf-8" }
   });
 
   document.getElementById("comp2Page").classList.remove("visible");
   document.getElementById("results").classList.add("visible");
 };
-
-function formatTime(ms) {
-  let s = ms / 1000;
-  let m = Math.floor(s / 60);
-  let sec = Math.floor(s % 60);
-  let cs = Math.floor((s - Math.floor(s)) * 100);
-  return String(m).padStart(2,"0") + ":" + String(sec).padStart(2,"0") + "." + String(cs).padStart(2,"0");
-}
 </script>
 
 </body>
 </html>
+
 
 
 
